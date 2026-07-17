@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Space Shooter</title>
+<link href="style.css", ref="stylesheet">
+<style>
+body{
+    margin:0;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    height:100vh;
+    font-family:Arial;
+}
+
+canvas{
+    background:#111;
+    border:3px solid white;
+}
+</style>
+</head>
+
+<body>
+    <button>
+        <a href="INDEX.html">Home</a>
+    </button>
+<canvas id="game" width="600" height="800"></canvas>
+
+<script>
+
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let keys={};
+let mouseDown=false;
+
+let score=0;
+let lives=5;
+
+const player={
+    x:270,
+    y:730,
+    w:60,
+    h:25,
+    speed:8
+};
+
+const bullets=[];
+const enemies=[];
+
+document.addEventListener("keydown",e=>{
+    keys[e.key]=true;
+});
+
+document.addEventListener("keyup",e=>{
+    keys[e.key]=false;
+});
+
+canvas.addEventListener("mousedown",e=>{
+    if(e.button===0)
+        mouseDown=true;
+});
+
+window.addEventListener("mouseup",()=>{
+    mouseDown=false;
+});
+
+canvas.addEventListener("contextmenu",e=>e.preventDefault());
+
+setInterval(()=>{
+
+    if(mouseDown){
+
+        bullets.push({
+            x:player.x+player.w/2-2+(Math.random()*6-3),
+            y:player.y,
+            w:4,
+            h:12
+        });
+
+    }
+
+},40);
+
+setInterval(()=>{
+
+    enemies.push({
+
+        x:Math.random()*560,
+        y:-40,
+        w:40,
+        h:40,
+        speed:2+Math.random()*3
+
+    });
+
+},700);
+
+function hit(a,b){
+
+    return(
+        a.x<b.x+b.w &&
+        a.x+a.w>b.x &&
+        a.y<b.y+b.h &&
+        a.y+a.h>b.y
+    );
+
+}
+
+function update(){
+
+    if(keys["ArrowLeft"]||keys["a"])
+        player.x-=player.speed;
+
+    if(keys["ArrowRight"]||keys["d"])
+        player.x+=player.speed;
+
+    if(player.x<0)player.x=0;
+
+    if(player.x+player.w>canvas.width)
+        player.x=canvas.width-player.w;
+
+    bullets.forEach((b,i)=>{
+
+        b.y-=15;
+
+        if(b.y<0)
+            bullets.splice(i,1);
+
+    });
+
+    enemies.forEach((e,ei)=>{
+
+        e.y+=e.speed;
+
+        if(hit(player,e)){
+
+            enemies.splice(ei,1);
+            lives--;
+
+        }
+
+        bullets.forEach((b,bi)=>{
+
+            if(hit(b,e)){
+
+                bullets.splice(bi,1);
+                enemies.splice(ei,1);
+                score++;
+
+            }
+
+        });
+
+        if(e.y>canvas.height){
+
+            enemies.splice(ei,1);
+            lives--;
+
+        }
+
+    });
+
+}
+
+function draw(){
+
+    ctx.fillStyle="#111";
+    ctx.fillRect(0,0,600,800);
+
+    // Player
+    ctx.fillStyle="deepskyblue";
+    ctx.fillRect(player.x,player.y,player.w,player.h);
+
+    // Bullets
+    ctx.fillStyle="lime";
+
+    bullets.forEach(b=>{
+
+        ctx.fillRect(b.x,b.y,b.w,b.h);
+
+    });
+
+    // Enemies
+    ctx.fillStyle="red";
+
+    enemies.forEach(e=>{
+
+        ctx.fillRect(e.x,e.y,e.w,e.h);
+
+    });
+
+    ctx.fillStyle="white";
+    ctx.font="24px Arial";
+    ctx.fillText("Score: "+score,15,35);
+
+    ctx.fillText("Lives: "+lives,15,70);
+
+    if(lives<=0){
+
+        ctx.fillStyle="white";
+        ctx.font="60px Arial";
+        ctx.fillText("GAME OVER",120,350);
+
+        ctx.font="30px Arial";
+        ctx.fillText("Refresh to Restart",170,410);
+
+        return;
+
+    }
+
+}
+
+function gameLoop(){
+
+    if(lives>0)
+        update();
+
+    draw();
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+gameLoop();
+
+</script>
+
+</body>
+</html>

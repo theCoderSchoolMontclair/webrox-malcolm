@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Heart Battle RPG</title>
+<link href="style.css", ref="stylesheet">
+<style>
+body{
+    background:black;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+}
+
+#arena{
+    width:500px;
+    height:300px;
+    border:5px solid white;
+    margin:20px auto;
+    position:relative;
+    overflow:hidden;
+}
+
+#heart{
+    width:20px;
+    height:20px;
+    background:red;
+    position:absolute;
+    left:240px;
+    top:240px;
+}
+
+.bullet{
+    width:15px;
+    height:15px;
+    background:orange;
+    position:absolute;
+    border-radius:50%;
+}
+
+button{
+    padding:12px 25px;
+    margin:5px;
+    font-size:18px;
+}
+
+#text{
+    background:#111;
+    width:500px;
+    margin:auto;
+    min-height:80px;
+    padding:10px;
+}
+</style>
+
+</head>
+
+<body>
+    <button>
+        <a href="INDEX.html">Home</a>
+    </button>
+<h1>⚔ Heart Battle ⚔</h1>
+
+<h2>👹 Dark Beast HP: <span id="boss">200</span></h2>
+
+<h2>❤️ Player HP: <span id="hp">100</span></h2>
+
+
+<div id="arena">
+<div id="heart"></div>
+</div>
+
+
+<button onclick="attack()">⚔ Fight</button>
+
+<p>
+Move with arrow keys
+</p>
+
+<div id="text">
+Battle started!
+</div>
+
+
+<script>
+
+let heart=document.getElementById("heart");
+let arena=document.getElementById("arena");
+
+let x=240;
+let y=240;
+
+let hp=100;
+let bossHP=200;
+
+let bullets=[];
+
+let keys={};
+
+
+document.addEventListener("keydown",e=>{
+keys[e.key]=true;
+});
+
+document.addEventListener("keyup",e=>{
+keys[e.key]=false;
+});
+
+
+function move(){
+
+if(keys["ArrowLeft"]) x-=5;
+if(keys["ArrowRight"]) x+=5;
+if(keys["ArrowUp"]) y-=5;
+if(keys["ArrowDown"]) y+=5;
+
+
+x=Math.max(0,Math.min(480,x));
+y=Math.max(0,Math.min(280,y));
+
+
+heart.style.left=x+"px";
+heart.style.top=y+"px";
+
+
+checkHit();
+
+requestAnimationFrame(move);
+
+}
+
+
+function shoot(){
+
+let b=document.createElement("div");
+
+b.className="bullet";
+
+b.style.left=Math.random()*480+"px";
+b.style.top="0px";
+
+arena.appendChild(b);
+
+bullets.push({
+el:b,
+x:parseInt(b.style.left),
+y:0
+});
+
+}
+
+
+setInterval(()=>{
+
+shoot();
+
+},700);
+
+
+
+function updateBullets(){
+
+for(let i=bullets.length-1;i>=0;i--){
+
+let b=bullets[i];
+
+b.y+=4;
+
+b.el.style.top=b.y+"px";
+
+
+if(b.y>300){
+
+b.el.remove();
+
+bullets.splice(i,1);
+
+}
+
+}
+
+}
+
+
+function checkHit(){
+
+for(let b of bullets){
+
+if(
+x < b.x+15 &&
+x+20 > b.x &&
+y < b.y+15 &&
+y+20 > b.y
+){
+
+hp-=10;
+
+document.getElementById("hp").innerHTML=hp;
+
+b.el.remove();
+
+bullets.splice(bullets.indexOf(b),1);
+
+document.getElementById("text").innerHTML=
+"💥 You got hit!";
+
+if(hp<=0){
+
+alert("You lost!");
+
+location.reload();
+
+}
+
+}
+
+}
+
+}
+
+
+function attack(){
+
+let damage=25;
+
+bossHP-=damage;
+
+document.getElementById("boss").innerHTML=bossHP;
+
+document.getElementById("text").innerHTML=
+"⚔ You attacked for "+damage+" damage!";
+
+
+if(bossHP<=0){
+
+alert("🏆 Boss defeated!");
+
+location.reload();
+
+}
+
+}
+
+
+
+function gameLoop(){
+
+updateBullets();
+
+requestAnimationFrame(gameLoop);
+
+}
+
+
+move();
+gameLoop();
+
+</script>
+
+</body>
+</html>
